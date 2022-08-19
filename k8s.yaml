@@ -1,0 +1,49 @@
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: springboot-simple
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: springboot-simple
+  template:
+    metadata:
+      labels:
+        app: springboot-simple
+    spec:
+      nodeSelector:
+        'kubernetes.io/os': linux
+      containers:
+        - name: springboot-simple
+          image: anthonynguyen334/springboot-simple:withapm
+          env:
+            - name: JAVA_OPTS
+              value: -Xms64m -Xmx128m -XX:+UseG1GC -Djava.security.egd=file:/dev/urandom -Dspring.zipkin.enabled=false
+          imagePullPolicy: Always
+          resources:
+            requests:
+              cpu: 100m
+              memory: 200Mi
+            limits:
+              cpu: 500m
+              memory: 500Mi
+          ports:
+            - containerPort: 8080
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: springboot-simple
+  annotations:
+    prometheus.io/scrape: 'true'
+  labels:
+    name: springboot-simple
+spec:
+  type: LoadBalancer
+  ports:
+    - port: 80
+      targetPort: 8080
+  selector:
+    app: springboot-simple

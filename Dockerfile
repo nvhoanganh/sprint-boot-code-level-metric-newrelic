@@ -1,13 +1,13 @@
-FROM weaveworksdemos/msd-java:jre-latest
+FROM eclipse-temurin:17-jdk-focal
 
-WORKDIR /usr/src/app
-COPY target/*.jar ./app.jar
+WORKDIR /app
+
+COPY .mvn/ .mvn
+COPY mvnw pom.xml ./
+RUN ./mvnw dependency:go-offline
+
+COPY src ./src
+
 COPY ./newrelic/newrelic.jar ./newrelic.jar
 
-RUN	chown -R ${SERVICE_USER}:${SERVICE_GROUP} ./app.jar
-RUN	chown -R ${SERVICE_USER}:${SERVICE_GROUP} ./newrelic.jar
-
-USER ${SERVICE_USER}
-
-ENTRYPOINT ["/usr/local/bin/java.sh","-jar","./app.jar", "--port=80"]
-
+CMD ["./mvnw", "spring-boot:run"]
